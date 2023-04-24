@@ -130,10 +130,14 @@ function countFunction() {
     startTimer()
     const startCount = setInterval(() => {
         for(let k = 0; k < 7; k++){
-            objFoothold[k].onContact(player, function() {
+            // 접촉 감지 코드
+            objFoothold[k].onCollide(player, function() {
                 selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
-                // isPlayerTouchingFoothold = true;
             })
+            objFoothold[k].onCollideEnd(player, function() {
+                selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
+            })
+
         }
         
         if(floor(getTimer()) == 20){ // 제한 시간 20초가 끝났을 때,
