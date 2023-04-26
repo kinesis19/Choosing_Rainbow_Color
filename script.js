@@ -10,7 +10,17 @@ const startbtn = getObject("gui_splash_start2")
 const timerboard = getObject("gui_timer_board")
 const stageNumber = getObject("gui_stage")
 const roundNumber = getObject("gui_round")
-const gui_lobby_pn = getObject("gui_lobby_set")
+
+const help_gui = getObject("HelpBtn_GUI")
+const lobby_gui = getObject("LoobyBackground_GUI")
+
+help_gui.onClick(function() {
+    help_gui.hide()
+})
+
+lobby_gui.onClick(function() {
+    lobby_gui.hide()
+})
 
 const gui_coin = getObject("gui_coin")
 const gui_help = getObject("gui_btmLeft") // 인 게임 좌측 하단 'help : H' 표시하는 gui임.
@@ -65,26 +75,26 @@ let selectHoldNum = -1;
 
 function Setup() {
     enableKeyControl(false)
-    gui_lobby_pn.onClick(function() {
-        gui_lobby_pn.setTextSize(50)
-        gui_lobby_pn.setText(" ")
-        gui_lobby_pn.hide()
-        enableKeyControl(true)
-        startbtn.setText("")
-        startbtn.hide()
-        for(let j = 0; j < 7; j++){
-            objFoothold[j] = getObject("FootHold_" + (j+1));
-        }
-        player.goTo(13, 0, 0)
-        obj_cloud_bright_1.goTo(0, 5, 0)
-        obj_cloud_bright_2.goTo(0, 5, 0)
-        ResettingData();
-        countFunction();  
-    })
+    // gui_lobby_pn.onClick(function() {
+    //     gui_lobby_pn.setTextSize(50)
+    //     gui_lobby_pn.setText(" ")
+    //     gui_lobby_pn.hide()
+    //     enableKeyControl(true)
+    //     startbtn.setText("")
+    //     startbtn.hide()
+    //     for(let j = 0; j < 7; j++){
+    //         objFoothold[j] = getObject("FootHold_" + (j+1));
+    //     }
+    //     player.goTo(13, 0, 0)
+    //     obj_cloud_bright_1.goTo(0, 5, 0)
+    //     obj_cloud_bright_2.goTo(0, 5, 0)
+    //     ResettingData();
+    //     countFunction();  
+    // })
     startbtn.onClick(function() {
-        gui_lobby_pn.setTextSize(50)
-        gui_lobby_pn.setText(" ")
-        gui_lobby_pn.hide()
+        // gui_lobby_pn.setTextSize(50)
+        // gui_lobby_pn.setText(" ")
+        // gui_lobby_pn.hide()
         enableKeyControl(true)
         startbtn.setText("")
         startbtn.hide()
@@ -324,8 +334,8 @@ function GameOver(){
     timerboard.setText("GameOver!!", true)   
     player.goTo(0, -100, 0)
     
-    gui_lobby_pn.setTextSize(50)
-    gui_lobby_pn.setText("생존 라운드 : " + roundNum + "\n\n")
+    // gui_lobby_pn.setTextSize(50)
+    // gui_lobby_pn.setText("생존 라운드 : " + roundNum + "\n\n")
     
     startbtn.setText("다시하기")
     startbtn.show()
@@ -534,20 +544,18 @@ game_over_obj.onCollide(player, function() { // 맨 아래 바닥
     GameOver();
 })
 
-onKeyDown("KeyH", function() {
-    gui_lobby_pn.setTextSize(30)
-    gui_lobby_pn.setText("[도움말]" +
-    "\n1. 매 라운드 마다 맵에 숨겨져 있는 코인을 획득하여, 일곱 가지 색상 발판들 중 하나 위에 올라가 있어야 합니다." +
-    "\n2. 매 라운드가 종료되면, 발판들은 랜덤 확률로 사라집니다." +
-    "\n3. 사라지는 발판들을 피해 오랫동안 생존해보세요!" +
-    "\n4. 라운드는 20초씩 구성되어 있습니다." +
-    "\n5. 매 라운드마다 코인을 획득하면, \'Coain Value\' 값이 true가 됩니다." +
-    "\n6. 라운드 종료시 발판이 안 사라져도 \'Coain Value\' 값이 false인 상태가 되면 GameOver가 됩니다." +
-    "\n\n-\'c\'키를 눌러 도움말 닫기-")
-})
-onKeyDown("KeyC", function() {
-    gui_lobby_pn.setText(" ")
-})
+// onKeyDown("KeyH", function() {
+//     gui_lobby_pn.setTextSize(30)
+//     gui_lobby_pn.setText("[도움말]" +
+//     "\n1. 매 라운드 마다 맵에 숨겨져 있는 코인을 획득하여, 일곱 가지 색상 발판들 중 하나 위에 올라가 있어야 합니다." +
+//     "\n2. 매 라운드가 종료되면, 발판들은 랜덤 확률로 사라집니다." +
+//     "\n3. 사라지는 발판들을 피해 오랫동안 생존해보세요!" +
+//     "\n4. 라운드는 20초씩 구성되어 있습니다." +
+//     "\n5. 매 라운드마다 코인을 획득하면, \'Coain Value\' 값이 true가 됩니다." +
+//     "\n6. 라운드 종료시 발판이 안 사라져도 \'Coain Value\' 값이 false인 상태가 되면 GameOver가 됩니다." +
+//     "\n\n-\'c\'키를 눌러 도움말 닫기-")
+// })
+
 onKeyDown("KeyR", function() {
     RevivingFootHold();
 })
