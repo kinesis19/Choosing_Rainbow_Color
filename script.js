@@ -3,27 +3,13 @@
 const bgmMain = getObject("MainBGM")
 const sfxOver = getObject("sfx_over")
 const sfxCoin = getObject("sfx_coin")
-// // 변수
+//  변수 - 0계층
 let isPlayerTouchingFoothold = true;
-// // GUI
+//  GUI
 const startbtn = getObject("gui_splash_start2")
 const timerboard = getObject("gui_timer_board")
-const stageNumber = getObject("gui_stage")
 const roundNumber = getObject("gui_round")
-
-const help_gui = getObject("HelpBtn_GUI")
-const lobby_gui = getObject("LoobyBackground_GUI")
-
-help_gui.onClick(function() {
-    help_gui.hide()
-})
-
-lobby_gui.onClick(function() {
-    lobby_gui.hide()
-})
-
 const gui_coin = getObject("gui_coin")
-const gui_help = getObject("gui_btmLeft") // 인 게임 좌측 하단 'help : H' 표시하는 gui임.
 const gui_spawn = getObject("gui_spawn") // Coin의 스폰 위치를 표시하는 gui임.
 const gui_fooldHold = getObject("gui_FootHold") // Player가 현재 어떤 발판 위에 있는지 표시하는 gui임.
 const objFoothold = [];
@@ -45,18 +31,15 @@ const obj_coin = getObject("Coin")
 // Bgm Setting
 bgmMain.setVolume(0.3)
 
-gui_lobby_pn.setTextSize(50)
-gui_lobby_pn.setText("화면을 터치하여 게임 시작하기")
 gui_fooldHold.setText(" ")
 gui_fooldHold.hide()
 gui_spawn.setText(" ")
 gui_spawn.hide()
-gui_help.setText(" ")
-gui_help.hide()
 gui_coin.setText("")
 gui_coin.hide()
 startbtn.setText(" ")
-startbtn.hide()
+
+// startbtn.hide()
 startbtn.setPosition(0, -520)
 
 // // 타이머 메서드
@@ -69,8 +52,7 @@ let aryFoothold = [0, 0, 0, 0, 0, 0, 0]; // 7가지 발판의 랜덤값 비교�
 
 let coinSpawnPos = 0;
 let isCoinHave = false;
-let selectHoldNum = -1; 
-// 발판 gui에 표시할 변수임 (플레이어가 현재 밟고 있는 발판의 이름과 여부를 띄우는 용도의 변수) 
+let selectHoldNum = -1; // 발판 gui에 표시할 변수임 (플레이어가 현재 밟고 있는 발판의 이름과 여부를 띄우는 용도의 변수) 
 //, -1이 기본 값 (0부터 빨강색)
 
 function Setup() {
@@ -101,7 +83,7 @@ function Setup() {
         for(let j = 0; j < 7; j++){
             objFoothold[j] = getObject("FootHold_" + (j+1));
         }
-        player.goTo(13, 0, 0)
+        player.goTo(9, 0, 0)
         
         obj_cloud_bright_1.goTo(0, 5, 0)
         obj_cloud_bright_2.goTo(0, 5, 0)
@@ -123,7 +105,6 @@ function countFunction() {
     
     bgmMain.stopAudio()
     bgmMain.playAudio()
-    stageNumber.setText("스테이지 : " + stageNum, true);
     roundNumber.setText("라운드 : " + roundNum, true);
     for(let jj = 0; jj < 7; jj++){
         if(aryFoothold[jj] > 7){
@@ -131,8 +112,6 @@ function countFunction() {
         }
     }
     gui_fooldHold.show()
-    gui_help.setText("help : H")
-    gui_help.show()
     CoinRandomSpawning();
     
     enableKeyControl(true)
@@ -172,7 +151,6 @@ function countFunction() {
                     isPlayerTouchingFoothold = true;
                 })
             }
-            stageNumber.setText(isPlayerTouchingFoothold);
             wait(2)
             if(isPlayerTouchingFoothold == false){
                 GameOver();
@@ -379,10 +357,10 @@ traps_a_1.forEach((Trap_A_1) => {
     setInterval(() => {
         const pos_traps_a_1 = Trap_A_1.getPosition();
         if (pos_traps_a_1.y >= -0.5 ) {
-            Trap_A_1.moveY(-3.0, 1)
+            Trap_A_1.moveY(-1.0, 1)
         }
-        else if(pos_traps_a_1.y <= -3.5){
-            Trap_A_1.moveY(3, 1)
+        else if(pos_traps_a_1.y <= -1.5){
+            Trap_A_1.moveY(1, 1)
         }
     })
     Trap_A_1.onCollide(player, function() { // 장애물 밟을 시, 디버프 효과 부여함. (5초간 이속 감소)
@@ -447,12 +425,12 @@ traps_e_1.forEach((Trap_E_1) => {
 
 traps_f_1.forEach((Trap_F_1) => {
     Trap_F_1.onCollide(player, function() {
-        player.goTo(-27, round(player.getPosition().y, 0)+13, 58)
+        player.goTo(-23.5, round(player.getPosition().y, 0)+11, 45)
     })
 })
 traps_f_2.forEach((Trap_F_2) => {
     Trap_F_2.onCollide(player, function() {
-        player.goTo(-27, round(player.getPosition().y, 0)-10, 58)
+        player.goTo(-23.5, round(player.getPosition().y, 0)-8, 45)
     })
 })
 
