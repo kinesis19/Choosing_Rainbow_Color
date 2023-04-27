@@ -26,7 +26,7 @@ const obj_cloud4 = getObject("Cloud_OBJ4")
 const obj_cloud_bright_1 = getObject("Cloud_bright_1")
 const obj_cloud_bright_2 = getObject("Cloud_bright_2")
 
-const obj_coin = getObject("Coin")
+const obj_key = getObject("Key")
 
 // Bgm Setting
 bgmMain.setVolume(0.3)
@@ -44,7 +44,7 @@ startbtn.setPosition(0, -520)
 
 // // 타이머 메서드
 
-let timerCount = 20;
+let timerCount = 20; // 제한 시간
 let roundNum = 1;
 let stageNum = 1;
 let isTimeOut = false; 
@@ -129,14 +129,14 @@ function countFunction() {
 
         }
         
-        if(floor(getTimer()) == 20){ // 제한 시간 20초가 끝났을 때,
+        if(floor(getTimer()) == timerCount){ // 제한 시간 20초가 끝났을 때,
             clearInterval(startCount)
             
-            for(let i = 0; i<7; i++){
+            for(let i = 0; i<7; i++){ // 발판에 랜덤으로 숫자 부여 => 랜덤 제거에 영향.
                 aryFoothold[i] = getRandom(1, 11);
             }
             
-            for(let ii = 0; ii < 7; ii++){
+            for(let ii = 0; ii < 7; ii++){ // 발판 랜덤으로 제거
                 if(aryFoothold[ii] > 7){
                     objFoothold[ii].kill()
                 }
@@ -165,7 +165,7 @@ function countFunction() {
                 }
             }
             
-        }else if(floor(getTimer()) != 20){
+        }else if(floor(getTimer()) != timerCount){
             if(player.getPosition().y == -100){
                 timerboard.setText("GameOver!!", true)  
             }else{
@@ -219,7 +219,7 @@ function ChangingFootHoldName(){ // 플레이어가 밟고 있는 발판의 값�
 }
 
 function CoinRandomSpawning(){
-    obj_coin.revive()
+    obj_key.revive()
     isCoinHave = false
     gui_coin.show()
     coinSpawnPos = getRandom(1, 7) // 일곱 가지 발판(Area) 구역 정하기
@@ -227,75 +227,75 @@ function CoinRandomSpawning(){
     
     if(coinSpawnPos == 1){ // 1번 발판 구역
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(66, 2, -65)
+            obj_key.goTo(35, 3, -56)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(41, 3, -55)
+            obj_key.goTo(52, 1, -35)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(50, 3, -38)
+            obj_key.goTo(33, 1, -36)
         }
         gui_spawn.setText("Coin Spawn : Red")
     }else if(coinSpawnPos == 2){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(-1, 2, -37)
+            obj_key.goTo(11, 3, -55)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(6, 3, -57)
+            obj_key.goTo(-8, 1, -50)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(-16, 2, -66)
+            obj_key.goTo(1, 1, -41)
         }
         gui_spawn.setText("Coin Spawn : Orange")
     }else if(coinSpawnPos == 3){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(-56, 2, -45)
+            obj_key.goTo(-32, 2, -52)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(-56, 2, -61)
+            obj_key.goTo(-52, 2, -52)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(-48, 2, -40)
+            obj_key.goTo(-52, 2, -38)
         }
         gui_spawn.setText("Coin Spawn : Yellow")
     }else if(coinSpawnPos == 4){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(-12, 1, 0)
+            obj_key.goTo(-10, 2, -3)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(-2, 3, 5)
+            obj_key.goTo(-10, 1, 10)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(11, 2, 13)
+            obj_key.goTo(10, 1, 5)
         }
         gui_spawn.setText("Coin Spawn : Green")
     }else if(coinSpawnPos == 5){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(66, 2, 58)
+            obj_key.goTo(55, 2, 38)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(37, 3, 70)
+            obj_key.goTo(48, 1, 55)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(37, 2, 44)
+            obj_key.goTo(39, 1, 35)
         }
         gui_spawn.setText("Coin Spawn : Blue")
     }else if(coinSpawnPos == 6){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(-5, 2, 71)
+            obj_key.goTo(-8, 1, 40)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(7, 2, 49)
+            obj_key.goTo(-8, 1, 50)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(-18, 2, 55)
+            obj_key.goTo(10, 3, 37)
         }
         gui_spawn.setText("Coin Spawn : Indigo")
     }else if(coinSpawnPos == 7){
         if(conSpawnPosDetail == 1){
-            obj_coin.goTo(-60, 2, 70)
+            obj_key.goTo(-31, 1, 50)
         }else if(conSpawnPosDetail == 2){
-            obj_coin.goTo(-42, 2, 37)
+            obj_key.goTo(-54, 1, 55)
         }else if(conSpawnPosDetail == 3){
-            obj_coin.goTo(-62, 3, 48)
+            obj_key.goTo(-54, 1, 33)
         }
         gui_spawn.setText("Coin Spawn : Violet")
     }
     gui_spawn.show()
 }
 
-obj_coin.onCollide(player, function() {
+obj_key.onCollide(player, function() { //  Player가 Coin을 획득했을 때
     sfxCoin.playAudio()
     isCoinHave = true;
-    obj_coin.kill()
+    obj_key.kill()
 })
 function ResettingData(){
     roundNum = 1;
@@ -464,7 +464,7 @@ obj_fallthing.forEach((OBJ_Fallthing) => {
 
 onSecond(1, function() {
     MovingCars();
-    obj_coin.rotateY(90) // 동전 애니메이션
+    obj_key.rotateY(90) // 동전 애니메이션
 })
 
 function MovingCars(){
