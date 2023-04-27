@@ -326,8 +326,9 @@ function GameOver(){
 
 // Trap_A Action Scripts
 // 배열 가져오는 함수
+
 // 오브젝트 (장애물) 선언
-const traps_a_1 = getObjectsByName("Trap_A_1")
+const trapsA_1 = getObjectsByName("TrapA_1")
 const traps_b_1 = getObjectsByName("Trap_B_1")
 const traps_c_1 = getObjectsByName("Trap_C_1")
 const traps_d_1 = getObjectsByName("Trap_D_1")
@@ -353,17 +354,17 @@ const objCar_9 = getObject("Car9")
 
 
 // trap 배열 순회하면서 코드 실행합니다.
-traps_a_1.forEach((Trap_A_1) => {
+trapsA_1.forEach((TrapA_1) => {
     setInterval(() => {
-        const pos_traps_a_1 = Trap_A_1.getPosition();
-        if (pos_traps_a_1.y >= -0.5 ) {
-            Trap_A_1.moveY(-1.0, 1)
+        const pos_trapsA_1 = TrapA_1.getPosition();
+        if (pos_trapsA_1.y >= -0.5) {
+            TrapA_1.moveY(2.0, 1)
         }
-        else if(pos_traps_a_1.y <= -1.5){
-            Trap_A_1.moveY(1, 1)
+        else if(pos_trapsA_1.y <= -1.5){
+            TrapA_1.moveY(1, 1)
         }
     })
-    Trap_A_1.onCollide(player, function() { // 장애물 밟을 시, 디버프 효과 부여함. (5초간 이속 감소)
+    TrapA_1.onCollide(player, function() { // 장애물 밟을 시, 디버프 효과 부여함. (5초간 이속 감소)
         player.changePlayerSpeed(0.5)
         wait(5)
         player.changePlayerSpeed(1)    
