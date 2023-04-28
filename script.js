@@ -6,6 +6,12 @@ const sfxCoin = getObject("sfx_coin")
 //  변수 - 0계층
 let isPlayerTouchingFoothold = true;
 //  GUI
+//Lobby GUI
+const gui_lobby_bg = getObject("GUI_LobbyBG")
+const gui_play_btn = getObject("GUI_PlayBtn")
+const gui_help_btn = getObject("GUI_HelpBtn")
+
+// oldVer
 const startbtn = getObject("gui_splash_start2")
 const timerboard = getObject("gui_timer_board")
 const roundNumber = getObject("gui_round")
@@ -18,6 +24,8 @@ const objFoothold = [];
 let player = getObject("player")
 
 // Obj (최상위)
+const spawnPoint = getObject("Obj_SpawnPoint")
+
 const obj_cloud1 = getObject("Cloud_OBJ1")
 const obj_cloud2 = getObject("Cloud_OBJ2")
 const obj_cloud3 = getObject("Cloud_OBJ3")
@@ -56,6 +64,7 @@ let selectHoldNum = -1; // 발판 gui에 표시할 변수임 (플레이어가 �
 //, -1이 기본 값 (0부터 빨강색)
 
 function Setup() {
+    player.spawn(spawnPoint) // Player를 SavePoint로 소환.
     enableKeyControl(false)
     // gui_lobby_pn.onClick(function() {
     //     gui_lobby_pn.setTextSize(50)
@@ -73,7 +82,23 @@ function Setup() {
     //     ResettingData();
     //     countFunction();  
     // })
-    startbtn.onClick(function() {
+    gui_play_btn.onClick(function() { // PlayBtn 클릭 시
+        AnimationGuiClickToPlayBtn();
+        
+        enableKeyControl(true)
+
+        for(let j = 0; j < 7; j++){ // 발판 오브젝트를 변수로 지정함.
+            objFoothold[j] = getObject("FootHold_" + (j+1));
+        }
+        player.goTo(9, 0, 0)
+        
+        obj_cloud_bright_1.goTo(0, 5, 0) // 라운드 생존 시 나타나는 구름 초기화
+        obj_cloud_bright_2.goTo(0, 5, 0)
+        wait(1.5)
+        ResettingData();
+        countFunction();  
+    })
+    startbtn.onClick(function() { // 다시하기 버튼 클릭 시
         // gui_lobby_pn.setTextSize(50)
         // gui_lobby_pn.setText(" ")
         // gui_lobby_pn.hide()
@@ -177,6 +202,15 @@ function countFunction() {
         }    
     }, 1000)
 }
+
+function AnimationGuiClickToPlayBtn(){ // Play Btn 클릭시, GUI 애니메이션 효과
+    gui_play_btn.move(-500, 0, 500)
+    gui_help_btn.move(-500, 0, 500)
+    wait(1)
+    gui_lobby_bg.move(0, -1500, 1000)
+}
+
+
 
 function RevivingFootHold(){ // FootHold의 Revive가 안 될때 사용하는 함수
     for(let jj = 0; jj < 7; jj++){
