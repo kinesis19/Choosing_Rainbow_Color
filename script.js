@@ -6,18 +6,32 @@ const sfxCoin = getObject("sfx_coin")
 //  변수 - 0계층
 let isPlayerTouchingFoothold = true;
 //  GUI
-//Lobby GUI
+// Lobby GUI
 const gui_lobby_bg = getObject("GUI_LobbyBG")
 const gui_play_btn = getObject("GUI_PlayBtn")
 const gui_help_btn = getObject("GUI_HelpBtn")
 
+// Lobby - Help GUI
+const gui_help_bg1 = getObject("GUI_HelpBG_1")
+const gui_help_bg2 = getObject("GUI_HelpBG_2")
+const gui_help_bg3 = getObject("GUI_HelpBG_3")
+const gui_help_bg4 = getObject("GUI_HelpBG_4")
+const gui_help_bg5 = getObject("GUI_HelpBG_5")
+
+gui_help_bg1.hide()
+gui_help_bg2.hide()
+gui_help_bg3.hide()
+gui_help_bg4.hide()
+gui_help_bg5.hide()
+
+// Main GUI
+const gui_timer_ui = getObject("GUI_TimerUI") // 현재 제한 시간까지 몇 초 경과 되었는지 알려주는 UI.
+const gui_round_ui = getObject("GUI_RoundUI") // 현재 라운드 수를 알려주는 UI.
+const gui_keyspawn_ui = getObject("GUI_KeyspawnUI") // 열쇠 스폰 위치 알려주는 UI.
+const gui_keyhave_ui = getObject("GUI_KeyhaveUI") // 현재 key를 가지고 있는지 여부를 알려주는 UI.
+const gui_nowpos_ui = getObject("GUI_NowposUI")
+
 // oldVer
-const startbtn = getObject("gui_splash_start2")
-const timerboard = getObject("gui_timer_board")
-const roundNumber = getObject("gui_round")
-const gui_coin = getObject("gui_coin")
-const gui_spawn = getObject("gui_spawn") // Coin의 스폰 위치를 표시하는 gui임.
-const gui_fooldHold = getObject("gui_FootHold") // Player가 현재 어떤 발판 위에 있는지 표시하는 gui임.
 const objFoothold = [];
 
 // Player Setting
@@ -39,16 +53,7 @@ const obj_key = getObject("Key")
 // Bgm Setting
 bgmMain.setVolume(0.3)
 
-gui_fooldHold.setText(" ")
-gui_fooldHold.hide()
-gui_spawn.setText(" ")
-gui_spawn.hide()
-gui_coin.setText("")
-gui_coin.hide()
-startbtn.setText(" ")
 
-// startbtn.hide()
-startbtn.setPosition(0, -520)
 
 // // 타이머 메서드
 
@@ -58,8 +63,8 @@ let stageNum = 1;
 let isTimeOut = false; 
 let aryFoothold = [0, 0, 0, 0, 0, 0, 0]; // 7가지 발판의 랜덤값 비교용 (메인)
 
-let coinSpawnPos = 0;
-let isCoinHave = false;
+let keySpawnPos = 0;
+let isKeyHave = false;
 let selectHoldNum = -1; // 발판 gui에 표시할 변수임 (플레이어가 현재 밟고 있는 발판의 이름과 여부를 띄우는 용도의 변수) 
 //, -1이 기본 값 (0부터 빨강색)
 
@@ -70,7 +75,7 @@ function Setup() {
     //     gui_lobby_pn.setTextSize(50)
     //     gui_lobby_pn.setText(" ")
     //     gui_lobby_pn.hide()
-    //     enableKeyControl(true)
+    //     enableKeyControl(true)startbtn
     //     startbtn.setText("")
     //     startbtn.hide()
     //     for(let j = 0; j < 7; j++){
@@ -98,23 +103,23 @@ function Setup() {
         ResettingData();
         countFunction();  
     })
-    startbtn.onClick(function() { // 다시하기 버튼 클릭 시
-        // gui_lobby_pn.setTextSize(50)
-        // gui_lobby_pn.setText(" ")
-        // gui_lobby_pn.hide()
-        enableKeyControl(true)
-        startbtn.setText("")
-        startbtn.hide()
-        for(let j = 0; j < 7; j++){
-            objFoothold[j] = getObject("FootHold_" + (j+1));
-        }
-        player.goTo(9, 0, 0)
+    // startbtn.onClick(function() { // 다시하기 버튼 클릭 시
+    //     // gui_lobby_pn.setTextSize(50)
+    //     // gui_lobby_pn.setText(" ")
+    //     // gui_lobby_pn.hide()
+    //     enableKeyControl(true)
+    //     startbtn.setText("")
+    //     startbtn.hide()
+    //     for(let j = 0; j < 7; j++){
+    //         objFoothold[j] = getObject("FootHold_" + (j+1));
+    //     }
+    //     player.goTo(9, 0, 0)
         
-        obj_cloud_bright_1.goTo(0, 5, 0)
-        obj_cloud_bright_2.goTo(0, 5, 0)
-        ResettingData();
-        countFunction();  
-    })
+    //     obj_cloud_bright_1.goTo(0, 5, 0)
+    //     obj_cloud_bright_2.goTo(0, 5, 0)
+    //     ResettingData();
+    //     countFunction();  
+    // })
 }
 
 function countFunction() {
@@ -130,14 +135,13 @@ function countFunction() {
     
     bgmMain.stopAudio()
     bgmMain.playAudio()
-    roundNumber.setText("라운드 : " + roundNum, true);
+    gui_round_ui.setText("Round : " + roundNum, true);
     for(let jj = 0; jj < 7; jj++){
         if(aryFoothold[jj] > 7){
             objFoothold[jj].revive()
         }
     }
-    gui_fooldHold.show()
-    CoinRandomSpawning();
+    KeyRandomSpawning();
     
     enableKeyControl(true)
     resetTimer()
@@ -166,7 +170,7 @@ function countFunction() {
                     objFoothold[ii].kill()
                 }
             }
-            timerboard.setText("Timer Over!", true)
+            gui_timer_ui.setText("Timer Over!", true)
             enableKeyControl(false) // Player 움직임 금지.
             wait(2)
             
@@ -180,7 +184,7 @@ function countFunction() {
             if(isPlayerTouchingFoothold == false){
                 GameOver();
             }else if(isPlayerTouchingFoothold == true){
-                if(isCoinHave == false){
+                if(isKeyHave == false){
                     GameOver();
                 }else{ // 다음 라운드로 진행
                     MovingClound();
@@ -192,12 +196,12 @@ function countFunction() {
             
         }else if(floor(getTimer()) != timerCount){
             if(player.getPosition().y == -100){
-                timerboard.setText("GameOver!!", true)  
+                gui_timer_ui.setText("GameOver!!", true)  
             }else{
                 isPlayerTouchingFoothold = false; // 플레이어가 FootHold와 닿아 있지 않을 때, false 값으로 지정함.
-                timerboard.setText(floor(getTimer())+"Sec", true)  
+                gui_timer_ui.setText(floor(getTimer())+"Sec", true)  
                 ChangingFootHoldName();
-                gui_coin.setText("Coin Value : " + isCoinHave)
+                gui_keyhave_ui.setText("Key Value : " + isKeyHave)
             }
         }    
     }, 1000)
@@ -205,8 +209,9 @@ function countFunction() {
 
 function AnimationGuiClickToPlayBtn(){ // Play Btn 클릭시, GUI 애니메이션 효과
     gui_play_btn.move(-500, 0, 500)
+    wait(0.4)
     gui_help_btn.move(-500, 0, 500)
-    wait(1)
+    wait(0.5)
     gui_lobby_bg.move(0, -1500, 1000)
 }
 
@@ -234,32 +239,31 @@ function MovingClound(){
 
 function ChangingFootHoldName(){ // 플레이어가 밟고 있는 발판의 값을 string형으로 바꿔주는 메서드
     if(selectHoldNum == -1){
-        gui_fooldHold.setText("Area : Nothing")
+        gui_nowpos_ui.setText("Area : Nothing")
     }else if(selectHoldNum == 0){
-        gui_fooldHold.setText("Area : Red")
+        gui_nowpos_ui.setText("Area : Red")
     }else if(selectHoldNum == 1){
-        gui_fooldHold.setText("Area : Orange")
+        gui_nowpos_ui.setText("Area : Orange")
     }else if(selectHoldNum == 2){
-        gui_fooldHold.setText("Area : Yellow")
+        gui_nowpos_ui.setText("Area : Yellow")
     }else if(selectHoldNum == 3){
-        gui_fooldHold.setText("Area : Green")
+        gui_nowpos_ui.setText("Area : Green")
     }else if(selectHoldNum == 4){
-        gui_fooldHold.setText("Area : Blue")
+        gui_nowpos_ui.setText("Area : Blue")
     }else if(selectHoldNum == 5){
-        gui_fooldHold.setText("Area : Indigo")
+        gui_nowpos_ui.setText("Area : Indigo")
     }else if(selectHoldNum == 6){
-        gui_fooldHold.setText("Area : Violet")
+        gui_nowpos_ui.setText("Area : Violet")
     }
 }
 
-function CoinRandomSpawning(){
+function KeyRandomSpawning(){
     obj_key.revive()
-    isCoinHave = false
-    gui_coin.show()
-    coinSpawnPos = getRandom(1, 7) // 일곱 가지 발판(Area) 구역 정하기
+    isKeyHave = false
+    keySpawnPos = getRandom(1, 7) // 일곱 가지 발판(Area) 구역 정하기
     let conSpawnPosDetail = getRandom(1, 3) // 해당 Area의 세부 위치
     
-    if(coinSpawnPos == 1){ // 1번 발판 구역
+    if(keySpawnPos == 1){ // 1번 발판 구역
         if(conSpawnPosDetail == 1){
             obj_key.goTo(35, 3, -56)
         }else if(conSpawnPosDetail == 2){
@@ -267,8 +271,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(33, 1, -36)
         }
-        gui_spawn.setText("Coin Spawn : Red")
-    }else if(coinSpawnPos == 2){
+        gui_keyspawn_ui.setText("Key Spawn : Red")
+    }else if(keySpawnPos == 2){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(11, 3, -55)
         }else if(conSpawnPosDetail == 2){
@@ -276,8 +280,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(1, 1, -41)
         }
-        gui_spawn.setText("Coin Spawn : Orange")
-    }else if(coinSpawnPos == 3){
+        gui_keyspawn_ui.setText("Key Spawn : Orange")
+    }else if(keySpawnPos == 3){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(-32, 2, -52)
         }else if(conSpawnPosDetail == 2){
@@ -285,8 +289,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(-52, 2, -38)
         }
-        gui_spawn.setText("Coin Spawn : Yellow")
-    }else if(coinSpawnPos == 4){
+        gui_keyspawn_ui.setText("Key Spawn : Yellow")
+    }else if(keySpawnPos == 4){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(-10, 2, -3)
         }else if(conSpawnPosDetail == 2){
@@ -294,8 +298,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(10, 1, 5)
         }
-        gui_spawn.setText("Coin Spawn : Green")
-    }else if(coinSpawnPos == 5){
+        gui_keyspawn_ui.setText("Key Spawn : Green")
+    }else if(keySpawnPos == 5){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(55, 2, 38)
         }else if(conSpawnPosDetail == 2){
@@ -303,8 +307,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(39, 1, 35)
         }
-        gui_spawn.setText("Coin Spawn : Blue")
-    }else if(coinSpawnPos == 6){
+        gui_keyspawn_ui.setText("Key Spawn : Blue")
+    }else if(keySpawnPos == 6){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(-8, 1, 40)
         }else if(conSpawnPosDetail == 2){
@@ -312,8 +316,8 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(10, 3, 37)
         }
-        gui_spawn.setText("Coin Spawn : Indigo")
-    }else if(coinSpawnPos == 7){
+        gui_keyspawn_ui.setText("Key Spawn : Indigo")
+    }else if(keySpawnPos == 7){
         if(conSpawnPosDetail == 1){
             obj_key.goTo(-31, 1, 50)
         }else if(conSpawnPosDetail == 2){
@@ -321,14 +325,14 @@ function CoinRandomSpawning(){
         }else if(conSpawnPosDetail == 3){
             obj_key.goTo(-54, 1, 33)
         }
-        gui_spawn.setText("Coin Spawn : Violet")
+        gui_keyspawn_ui.setText("Key Spawn : Violet")
     }
-    gui_spawn.show()
+    gui_keyspawn_ui.show()
 }
 
 obj_key.onCollide(player, function() { //  Player가 Coin을 획득했을 때
     sfxCoin.playAudio()
-    isCoinHave = true;
+    isKeyHave = true;
     obj_key.kill()
 })
 function ResettingData(){
@@ -343,15 +347,14 @@ function GameOver(){
     pauseTimer()
     isPlayerTouchingFoothold = false;
     enableKeyControl(false)
-    timerboard.setText("GameOver!!", true)   
+    gui_timer_ui.setText("GameOver!!", true)   
     player.goTo(0, -100, 0)
     
     // gui_lobby_pn.setTextSize(50)
     // gui_lobby_pn.setText("생존 라운드 : " + roundNum + "\n\n")
     
-    startbtn.setText("다시하기")
-    startbtn.show()
-    
+    // 다시하기 버튼 구현 필요.
+
     obj_cloud1.goTo(-7, -88, -3)
     obj_cloud2.goTo(0, 0, 3)
     obj_cloud3.goTo(0, -97, -15)
