@@ -328,6 +328,7 @@ function GameOver(){
 // 배열 가져오는 함수
 
 // 오브젝트 (장애물) 선언
+const testTrapA = getObject("testTrapA_1")
 const trapsA_1 = getObjectsByName("TrapA_1")
 const traps_b_1 = getObjectsByName("Trap_B_1")
 const traps_c_1 = getObjectsByName("Trap_C_1")
@@ -352,13 +353,14 @@ const objCar_7 = getObject("Car7")
 const objCar_8 = getObject("Car8")
 const objCar_9 = getObject("Car9")
 
+testTrapA.moveY(10,1)
 
 // trap 배열 순회하면서 코드 실행합니다.
 trapsA_1.forEach((TrapA_1) => {
     setInterval(() => {
         const pos_trapsA_1 = TrapA_1.getPosition();
         if (pos_trapsA_1.y >= -0.5) {
-            TrapA_1.moveY(2.0, 1)
+            TrapA_1.moveY(-1, 1)
         }
         else if(pos_trapsA_1.y <= -1.5){
             TrapA_1.moveY(1, 1)
@@ -523,22 +525,6 @@ game_over_obj.onCollide(player, function() { // 맨 아래 바닥
     GameOver();
 })
 
-// onKeyDown("KeyH", function() {
-//     gui_lobby_pn.setTextSize(30)
-//     gui_lobby_pn.setText("[도움말]" +
-//     "\n1. 매 라운드 마다 맵에 숨겨져 있는 코인을 획득하여, 일곱 가지 색상 발판들 중 하나 위에 올라가 있어야 합니다." +
-//     "\n2. 매 라운드가 종료되면, 발판들은 랜덤 확률로 사라집니다." +
-//     "\n3. 사라지는 발판들을 피해 오랫동안 생존해보세요!" +
-//     "\n4. 라운드는 20초씩 구성되어 있습니다." +
-//     "\n5. 매 라운드마다 코인을 획득하면, \'Coain Value\' 값이 true가 됩니다." +
-//     "\n6. 라운드 종료시 발판이 안 사라져도 \'Coain Value\' 값이 false인 상태가 되면 GameOver가 됩니다." +
-//     "\n\n-\'c\'키를 눌러 도움말 닫기-")
-// })
-
 onKeyDown("KeyR", function() {
     RevivingFootHold();
 })
-
-// game_over_spawn_obj.onCollide(player, function() { // 핑크 바닥
-//     GameOver();
-// })
