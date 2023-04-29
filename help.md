@@ -20,7 +20,14 @@
 1. 플레이어가 30라운드 동안 생존한 경우 게임을 승리하게 됩니다.
 
 [Tip]
-1. '열쇠' 획득하고 발판을 골라 서 있는 경우, 남은 제한 시간을 건너뛰어 해당 라운드를 종료할 수 있습니다.
+1. (미구현)'열쇠' 획득하고 발판을 골라 서 있는 경우, 남은 제한 시간을 건너뛰어 해당 라운드를 종료할 수 있습니다.
+
+[You Win]
+
+축하합니다!
+당신은 30라운드 동안 무지개 색 발판을 고르며 생존에 성공했습니다.
+
+
 
 ## 영어 ver
 [Basic explanation]
@@ -42,3 +49,7 @@
 
 [Tip]
 1. If you have acquired the 'key' and are standing with the footrest selected, you can skip the remaining time limit to end the round.
+
+[You Win]
+Congratulations!
+You survived by choosing rainbow color footrest for 30 rounds.

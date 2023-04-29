@@ -1,28 +1,35 @@
 // 2023.04.15 - v1.0.0-beta1 (최종 완성작)
 // BGM and SFX
 const bgmMain = getObject("MainBGM")
+bgmMain.stopAudio()
 const sfxOver = getObject("sfx_over")
-const sfxCoin = getObject("sfx_coin")
+sfxOver.stopAudio()
+const sfxKey = getObject("sfx_coin")
+sfxKey.stopAudio()
+
 //  변수 - 0계층
 let isPlayerTouchingFoothold = true;
+let isGameOvered = false;
+const objFoothold = [];
 //  GUI
 // Lobby GUI
 const gui_lobby_bg = getObject("GUI_LobbyBG")
 const gui_play_btn = getObject("GUI_PlayBtn")
 const gui_help_btn = getObject("GUI_HelpBtn")
-
+const gui_helpRight_btn = getObject("GUI_HelpRightBtn")
+const gui_helpLeft_btn = getObject("GUI_HelpLeftBtn")
+gui_helpRight_btn.hide()
+gui_helpLeft_btn.hide()
 // Lobby - Help GUI
+const gui_help_play2_btn = getObject("GUI_Play2Btn")
+gui_help_play2_btn.hide()
 const gui_help_bg1 = getObject("GUI_HelpBG_1")
 const gui_help_bg2 = getObject("GUI_HelpBG_2")
 const gui_help_bg3 = getObject("GUI_HelpBG_3")
 const gui_help_bg4 = getObject("GUI_HelpBG_4")
 const gui_help_bg5 = getObject("GUI_HelpBG_5")
 
-gui_help_bg1.hide()
-gui_help_bg2.hide()
-gui_help_bg3.hide()
-gui_help_bg4.hide()
-gui_help_bg5.hide()
+GUIHelpAllHide()
 
 // Main GUI
 const gui_timer_ui = getObject("GUI_TimerUI") // 현재 제한 시간까지 몇 초 경과 되었는지 알려주는 UI.
@@ -30,15 +37,19 @@ const gui_round_ui = getObject("GUI_RoundUI") // 현재 라운드 수를 알려�
 const gui_keyspawn_ui = getObject("GUI_KeyspawnUI") // 열쇠 스폰 위치 알려주는 UI.
 const gui_keyhave_ui = getObject("GUI_KeyhaveUI") // 현재 key를 가지고 있는지 여부를 알려주는 UI.
 const gui_nowpos_ui = getObject("GUI_NowposUI")
+const gui_replay_btn = getObject("GUI_ReplayBtn")
+gui_replay_btn.setText("")
+gui_replay_btn.hide()
 
-// oldVer
-const objFoothold = [];
+// Help BG 넘기는 페이지 변수
+let nowPage = 1;
 
 // Player Setting
 let player = getObject("player")
 
 // Obj (최상위)
 const spawnPoint = getObject("Obj_SpawnPoint")
+const game_over_spawn_obj = getObject("GMOverSpawnOBJ") // 게임 오버시 등장하는 발판(맨 아래)
 
 const obj_cloud1 = getObject("Cloud_OBJ1")
 const obj_cloud2 = getObject("Cloud_OBJ2")
@@ -58,8 +69,8 @@ bgmMain.setVolume(0.3)
 // // 타이머 메서드
 
 let timerCount = 20; // 제한 시간
-let roundNum = 1;
-let stageNum = 1;
+let roundNum = 1; // 현재 라운드
+let maxRoundNum = 3; // 게임 종료 라운드
 let isTimeOut = false; 
 let aryFoothold = [0, 0, 0, 0, 0, 0, 0]; // 7가지 발판의 랜덤값 비교용 (메인)
 
@@ -71,140 +82,176 @@ let selectHoldNum = -1; // 발판 gui에 표시할 변수임 (플레이어가 �
 function Setup() {
     player.spawn(spawnPoint) // Player를 SavePoint로 소환.
     enableKeyControl(false)
-    // gui_lobby_pn.onClick(function() {
-    //     gui_lobby_pn.setTextSize(50)
-    //     gui_lobby_pn.setText(" ")
-    //     gui_lobby_pn.hide()
-    //     enableKeyControl(true)startbtn
-    //     startbtn.setText("")
-    //     startbtn.hide()
-    //     for(let j = 0; j < 7; j++){
-    //         objFoothold[j] = getObject("FootHold_" + (j+1));
-    //     }
-    //     player.goTo(13, 0, 0)
-    //     obj_cloud_bright_1.goTo(0, 5, 0)
-    //     obj_cloud_bright_2.goTo(0, 5, 0)
-    //     ResettingData();
-    //     countFunction();  
-    // })
-    gui_play_btn.onClick(function() { // PlayBtn 클릭 시
-        AnimationGuiClickToPlayBtn();
-        
-        enableKeyControl(true)
+}
+// Button Clicking 관련
+gui_play_btn.onClick(function() { // PlayBtn 클릭 시
+    AnimationGuiClickToPlayBtn();
 
-        for(let j = 0; j < 7; j++){ // 발판 오브젝트를 변수로 지정함.
-            objFoothold[j] = getObject("FootHold_" + (j+1));
-        }
-        player.goTo(9, 0, 0)
-        
-        obj_cloud_bright_1.goTo(0, 5, 0) // 라운드 생존 시 나타나는 구름 초기화
-        obj_cloud_bright_2.goTo(0, 5, 0)
-        wait(1.5)
-        ResettingData();
-        countFunction();  
-    })
-    // startbtn.onClick(function() { // 다시하기 버튼 클릭 시
-    //     // gui_lobby_pn.setTextSize(50)
-    //     // gui_lobby_pn.setText(" ")
-    //     // gui_lobby_pn.hide()
-    //     enableKeyControl(true)
-    //     startbtn.setText("")
-    //     startbtn.hide()
-    //     for(let j = 0; j < 7; j++){
-    //         objFoothold[j] = getObject("FootHold_" + (j+1));
-    //     }
-    //     player.goTo(9, 0, 0)
-        
-    //     obj_cloud_bright_1.goTo(0, 5, 0)
-    //     obj_cloud_bright_2.goTo(0, 5, 0)
-    //     ResettingData();
-    //     countFunction();  
-    // })
+    PlayandReplayBtnClicking();
+})
+gui_replay_btn.onClick(function() { // 다시하기 버튼 클릭 시
+    gui_replay_btn.setText("")
+    gui_replay_btn.hide()
+
+    PlayandReplayBtnClicking();
+})
+gui_help_play2_btn.onClick(function() { // Play 2 Btn 클릭 시
+    GUIHelpAllHide();   
+
+    gui_lobby_bg.move(0, -1500, 1000)
+
+    PlayandReplayBtnClicking();
+})
+gui_help_btn.onClick(function() { // Help Btn 클릭 시
+    AnimationGuiClickToHelpBtn();
+    ShowingHelpPage()
+})
+function GUIHelpAllHide(){
+    gui_help_bg1.hide()
+    gui_help_bg2.hide()
+    gui_help_bg3.hide()
+    gui_help_bg4.hide()
+    gui_help_bg5.hide()
+    gui_help_play2_btn.hide()
+    gui_helpLeft_btn.hide()
+}
+function ShowingHelpPage(){
+    GUIHelpAllHide();
+    if(nowPage == 1){
+        gui_help_bg1.show()
+        gui_helpRight_btn.show()
+        gui_helpLeft_btn.hide()
+        gui_help_play2_btn.hide()
+    }else if(nowPage == 2){
+        gui_help_bg2.show()
+        gui_helpRight_btn.show()
+        gui_helpLeft_btn.show()
+        gui_help_play2_btn.hide()
+    }else if(nowPage == 3){
+        gui_help_bg3.show()
+        gui_helpRight_btn.show()
+        gui_helpLeft_btn.show()
+        gui_help_play2_btn.hide()
+    }else if(nowPage == 4){
+        gui_help_bg4.show()
+        gui_helpRight_btn.show()
+        gui_helpLeft_btn.show()
+        gui_help_play2_btn.hide()
+    }else if(nowPage == 5){
+        gui_help_bg5.show()
+        gui_helpRight_btn.hide()
+        gui_helpLeft_btn.show()
+        gui_help_play2_btn.show()
+    }
+}
+gui_helpRight_btn.onClick(function() {
+    nowPage++;
+    ShowingHelpPage();
+})
+gui_helpLeft_btn.onClick(function() {
+    nowPage--;
+    ShowingHelpPage();
+})
+
+function PlayandReplayBtnClicking(){ // Play Btn과 RePlay Btn의 공통 기능
+    enableKeyControl(true)
+
+    for(let j = 0; j < 7; j++){
+        objFoothold[j] = getObject("FootHold_" + (j+1));
+    }
+    player.goTo(9, 0, 0)
+    
+    obj_cloud_bright_1.goTo(0, 5, 0)
+    obj_cloud_bright_2.goTo(0, 5, 0)
+    ResettingData();
+    countFunction();  
 }
 
-function countFunction() {
-    bgmMain.setVolume(0.3)
-    // 구름 정리
-    obj_cloud1.goTo(-1000, 0, 0)
-    obj_cloud2.goTo(-1000, 0, 0)
-    obj_cloud3.goTo(-1000, 0, 0)
-    obj_cloud4.goTo(-1000, 0, 0)
-    
-    obj_cloud_bright_1.goTo(-1000, 0, 0)
-    obj_cloud_bright_2.goTo(-1000, 0, 0)
-    
-    bgmMain.stopAudio()
+function countFunction() { // 타이머 시작 함수
+    ResettingData();
+
     bgmMain.playAudio()
     gui_round_ui.setText("Round : " + roundNum, true);
-    for(let jj = 0; jj < 7; jj++){
-        if(aryFoothold[jj] > 7){
-            objFoothold[jj].revive()
-        }
-    }
+    RevivingFootHold();
     KeyRandomSpawning();
     
     enableKeyControl(true)
-    resetTimer()
-    startTimer()
-    const startCount = setInterval(() => {
-        for(let k = 0; k < 7; k++){
-            // 접촉 감지 코드
-            objFoothold[k].onCollide(player, function() {
-                selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
-            })
-            objFoothold[k].onCollideEnd(player, function() {
-                selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
-            })
+    if(roundNum == maxRoundNum){
+        player.goTo(0, 220, 0)
+    }else{
+        resetTimer()
+        startTimer()
 
-        }
-        
-        if(floor(getTimer()) == timerCount){ // 제한 시간 20초가 끝났을 때,
-            clearInterval(startCount)
-            
-            for(let i = 0; i<7; i++){ // 발판에 랜덤으로 숫자 부여 => 랜덤 제거에 영향.
-                aryFoothold[i] = getRandom(1, 11);
-            }
-            
-            for(let ii = 0; ii < 7; ii++){ // 발판 랜덤으로 제거
-                if(aryFoothold[ii] > 7){
-                    objFoothold[ii].kill()
-                }
-            }
-            gui_timer_ui.setText("Timer Over!", true)
-            enableKeyControl(false) // Player 움직임 금지.
-            wait(2)
-            
+        const startCount = setInterval(() => {
             for(let k = 0; k < 7; k++){
-                objFoothold[k].onContact(player, function() {
+                // 접촉 감지 코드
+                objFoothold[k].onCollide(player, function() {
                     selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
-                    isPlayerTouchingFoothold = true;
                 })
-            }
-            wait(2)
-            if(isPlayerTouchingFoothold == false){
-                GameOver();
-            }else if(isPlayerTouchingFoothold == true){
-                if(isKeyHave == false){
-                    GameOver();
-                }else{ // 다음 라운드로 진행
-                    MovingClound();
-                    wait(3)
-                    roundNum++;
-                    countFunction();
-                }
+                objFoothold[k].onCollideEnd(player, function() {
+                    selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
+                })
+
             }
             
-        }else if(floor(getTimer()) != timerCount){
-            if(player.getPosition().y == -100){
-                gui_timer_ui.setText("GameOver!!", true)  
-            }else{
+            if(floor(getTimer()) == timerCount){ // 제한 시간 20초가 끝났을 때,
+                clearInterval(startCount)
+                
+                gui_timer_ui.setText("Timer Over!", true)
+                enableKeyControl(false) // Player 움직임 금지.
+
+                for(let i = 0; i<7; i++){ // 발판에 랜덤으로 숫자 부여 => 랜덤 제거에 영향.
+                    aryFoothold[i] = getRandom(1, 11);
+                }
+                
+                for(let ii = 0; ii < 7; ii++){ // 발판 랜덤으로 제거
+                    if(aryFoothold[ii] > 7){
+                        objFoothold[ii].kill()
+                    }
+                }
+                wait(2)
+                
+                for(let k = 0; k < 7; k++){
+                    objFoothold[k].onContact(player, function() {
+                        selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
+                        isPlayerTouchingFoothold = true;
+                    })
+                }
+
+                wait(2)
+                if(isPlayerTouchingFoothold == false){
+                    if(isGameOvered == false){
+                        GameOver();
+                    }else{
+                
+                    }
+                    // GameOver();
+                }else if(isPlayerTouchingFoothold == true){
+                    if(isKeyHave == false){
+                        if(isGameOvered == false){
+                            GameOver();
+                        }else{
+                    
+                        }
+                        // GameOver();
+                    }else if(isKeyHave == true){ // 다음 라운드로 진행
+                        MovingClound(); // 다음 라운드 진출 전에 구름 나타내기.
+                        wait(3)
+                        roundNum++; // 라운드 수 1 증가.
+                        countFunction(); // 함수 재귀호출.
+                    }
+                }
+
+                
+            }else if(floor(getTimer()) != timerCount){
                 isPlayerTouchingFoothold = false; // 플레이어가 FootHold와 닿아 있지 않을 때, false 값으로 지정함.
                 gui_timer_ui.setText(floor(getTimer())+"Sec", true)  
                 ChangingFootHoldName();
                 gui_keyhave_ui.setText("Key Value : " + isKeyHave)
-            }
-        }    
-    }, 1000)
+                
+            }    
+        }, 1000)
+    }
 }
 
 function AnimationGuiClickToPlayBtn(){ // Play Btn 클릭시, GUI 애니메이션 효과
@@ -215,12 +262,22 @@ function AnimationGuiClickToPlayBtn(){ // Play Btn 클릭시, GUI 애니메이�
     gui_lobby_bg.move(0, -1500, 1000)
 }
 
+function AnimationGuiClickToHelpBtn(){
+    gui_help_btn.move(-500, 0, 500)
+    wait(0.4)
+    gui_play_btn.move(-500, 0, 500)
+    wait(0.5)
+
+}
 
 
-function RevivingFootHold(){ // FootHold의 Revive가 안 될때 사용하는 함수
-    for(let jj = 0; jj < 7; jj++){
-        if(aryFoothold[jj] > 7){
-            objFoothold[jj].revive()
+
+function RevivingFootHold(){ // FootHold의 Revive를 하는 함수
+    for(let i = 0; i < 3; i++){ // 3번동안 Rebive를 함.
+        for(let jj = 0; jj < 7; jj++){ 
+            if(aryFoothold[jj] > 7){
+                objFoothold[jj].revive()
+            }
         }
     }
 }
@@ -331,45 +388,56 @@ function KeyRandomSpawning(){
 }
 
 obj_key.onCollide(player, function() { //  Player가 Coin을 획득했을 때
-    sfxCoin.playAudio()
+    sfxKey.playAudio()
     isKeyHave = true;
     obj_key.kill()
 })
 function ResettingData(){
-    roundNum = 1;
-    stageNum = 1;
+    isGameOvered = false;
     bgmMain.stopAudio()
+    bgmMain.setVolume(0.3)
+    // 구름 정리
+    obj_cloud1.goTo(-1000, 0, 0)
+    obj_cloud2.goTo(-1000, 0, 0)
+    obj_cloud3.goTo(-1000, 0, 0)
+    obj_cloud4.goTo(-1000, 0, 0)
+    
+    obj_cloud_bright_1.goTo(-1000, 0, 0)
+    obj_cloud_bright_2.goTo(-1000, 0, 0)
+    game_over_spawn_obj.kill()
 }
 
 function GameOver(){
+    isGameOvered = true;
+    game_over_spawn_obj.revive()
+    roundNum = 1;
     bgmMain.stopAudio()
     sfxOver.playAudio()
     pauseTimer()
     isPlayerTouchingFoothold = false;
     enableKeyControl(false)
-    gui_timer_ui.setText("GameOver!!", true)   
-    player.goTo(0, -100, 0)
-    
-    // gui_lobby_pn.setTextSize(50)
-    // gui_lobby_pn.setText("생존 라운드 : " + roundNum + "\n\n")
+    gui_timer_ui.setText("Game Over!!", true)   
+    player.goTo(0, -70, 0)
     
     // 다시하기 버튼 구현 필요.
+
+    gui_replay_btn.setText("Re Play")
+    gui_replay_btn.show()
 
     obj_cloud1.goTo(-7, -88, -3)
     obj_cloud2.goTo(0, 0, 3)
     obj_cloud3.goTo(0, -97, -15)
     obj_cloud4.goTo(15, -98, 0)
+
 }
 
 // Trap_A Action Scripts
 // 배열 가져오는 함수
 
 // 오브젝트 (장애물) 선언
-const testTrapA = getObject("testTrapA_1")
 const trapsA_1 = getObjectsByName("TrapA_1")
 const traps_b_1 = getObjectsByName("Trap_B_1")
 const traps_c_1 = getObjectsByName("Trap_C_1")
-const traps_d_1 = getObjectsByName("Trap_D_1")
 const traps_e_1 = getObjectsByName("Trap_E_1")
 const traps_f_1 = getObjectsByName("Trap_F_1")
 const traps_f_2 = getObjectsByName("Trap_F_2")
@@ -377,9 +445,9 @@ const traps_f_2 = getObjectsByName("Trap_F_2")
 const obj_speed = getObjectsByName("OBJ_SPEED")
 const game_over_obj = getObject("GameOverObj")
 const obj_fallthing = getObjectsByName("OBJ_Fallthing")
-const game_over_spawn_obj = getObject("GMOverSpawnOBJ")
 
 // 오브젝트 (자동차) 선언
+// const objCar_1 = getObjectsByName("Car1") // 자동차들은 ByName이 안됨.
 const objCar_1 = getObject("Car1")
 const objCar_2 = getObject("Car2")
 const objCar_3 = getObject("Car3")
@@ -390,7 +458,6 @@ const objCar_7 = getObject("Car7")
 const objCar_8 = getObject("Car8")
 const objCar_9 = getObject("Car9")
 
-testTrapA.moveY(10,1)
 
 // trap 배열 순회하면서 코드 실행합니다.
 trapsA_1.forEach((TrapA_1) => {
@@ -429,35 +496,23 @@ traps_c_1.forEach((Trap_C_1) => {
         
     })
 })
-traps_d_1.forEach((Trap_D_1) => {
-    setInterval(() => {
-        const pos_traps_d_1 = Trap_D_1.getPosition();
-        if (pos_traps_d_1.y >= 2.4) {
-            wait(1)
-            Trap_D_1.moveY(-5, 4)
-        }
-        else if(pos_traps_d_1.y <= -3.4){
-            wait(1)
-            Trap_D_1.moveY(5, 4)
-        }
-    })
-})
+
 traps_e_1.forEach((Trap_E_1) => {
     Trap_E_1.onCollide(player, function() {
         const traps_c_random_number = getRandom(1, 5)
         if(traps_c_random_number == 1){ // 1번 : 파란 발판으로 이동 및 이속 감소 부여.
-            player.goTo(55, 0.6, 55)
+            player.goTo(55, 1, 55)
             player.changePlayerSpeed(0.5)
             wait(3)
             player.changePlayerSpeed(1)
         }else if(traps_c_random_number == 2){ // 2번 : 보라 발판으로 이동
-            player.goTo(-55, 0.6, 55)
+            player.goTo(-55, 1, 55)
         }else if(traps_c_random_number == 3){ // 3번 : 빨간 발판으로 이동
-            player.goTo(55, 0.6, -55)
+            player.goTo(55, 1, -55)
         }else if(traps_c_random_number == 4){ // 4번 : 초록 발판으로 이동
-            player.goTo(0, 0.6, 0)
+            player.goTo(0, 1, 0)
         }else if(traps_c_random_number == 5){ // 5번 : 노란 발판으로 이동
-            player.goTo(-55, 0.6, -55)
+            player.goTo(-55, 1, -55)
         }
     })
     
@@ -508,58 +563,62 @@ onSecond(1, function() {
 })
 
 function MovingCars(){
-    if(objCar_1.getPosition().z > 130){
-        objCar_1.goTo(objCar_1.getPosition().x, objCar_1.getPosition().y, -130)
-    }else if(objCar_1.getPosition().z <= 130){
-        objCar_1.moveZ(261, 30)
+    if(objCar_1.getPosition().x > 110){
+        objCar_1.goTo(-110, objCar_1.getPosition().y, objCar_1.getPosition().z)
+    }else if(objCar_1.getPosition().x <= 110){
+        objCar_1.moveX(221, 30)
     }
-    if(objCar_2.getPosition().z > 130){
-        objCar_2.goTo(objCar_2.getPosition().x, objCar_2.getPosition().y, -130)
-    }else if(objCar_2.getPosition().z <= 132){
-        objCar_2.moveZ(131, 30)
+    if(objCar_2.getPosition().x > 110){
+        objCar_2.goTo(-110, objCar_2.getPosition().y, objCar_2.getPosition().z)
+    }else if(objCar_2.getPosition().x <= 110){
+        objCar_2.moveX(221, 30)
     }
-    if(objCar_3.getPosition().z > 130){
-        objCar_3.goTo(objCar_3.getPosition().x, objCar_3.getPosition().y, -130)
-    }else if(objCar_3.getPosition().z <= 140){
-        objCar_3.moveZ(31, 30)
+    if(objCar_3.getPosition().x > 110){
+        objCar_3.goTo(-110, objCar_3.getPosition().y, objCar_3.getPosition().z)
+    }else if(objCar_3.getPosition().x <= 110){
+        objCar_3.moveX(221, 30)
     }
-    
-    if(objCar_4.getPosition().z < -130){
-        objCar_4.goTo(objCar_4.getPosition().x, objCar_4.getPosition().y, 130)
-    }else if(objCar_4.getPosition().z >= -130){
-        objCar_4.moveZ(-180, 30)
+
+    if(objCar_4.getPosition().x < -110){
+        objCar_4.goTo(110, objCar_4.getPosition().y, objCar_4.getPosition().z)
+    }else if(objCar_4.getPosition().x >= -110){
+        objCar_4.moveX(-221, 30)
     }
-    if(objCar_5.getPosition().z < -130){
-        objCar_5.goTo(objCar_5.getPosition().x, objCar_5.getPosition().y, 130)
-    }else if(objCar_5.getPosition().z >= -130){
-        objCar_5.moveZ(-31, 30)
-    }
-    
-    if(objCar_6.getPosition().x > 130){
-        objCar_6.goTo(-130, objCar_6.getPosition().y, objCar_6.getPosition().z)
-    }else if(objCar_6.getPosition().x <= 130){
-        objCar_6.moveX(180, 30)
-    }
-    if(objCar_7.getPosition().x > 130){
-        objCar_7.goTo(-130, objCar_7.getPosition().y, objCar_6.getPosition().z)
-    }else if(objCar_7.getPosition().x <= 130){
-        objCar_7.moveX(31, 30)
+    if(objCar_5.getPosition().x < -110){
+        objCar_5.goTo(110, objCar_5.getPosition().y, objCar_5.getPosition().z)
+    }else if(objCar_5.getPosition().x >= -110){
+        objCar_5.moveX(-221, 30)
     }
     
-    if(objCar_8.getPosition().x < -130){
-        objCar_8.goTo(130, objCar_8.getPosition().y, objCar_8.getPosition().z)
-    }else if(objCar_8.getPosition().x >= -130){
-        objCar_8.moveX(-100, 30)
+    if(objCar_6.getPosition().x > 110){
+        objCar_6.goTo(-110, objCar_6.getPosition().y, objCar_6.getPosition().z)
+    }else if(objCar_6.getPosition().x <= 110){
+        objCar_6.moveX(221, 30)
     }
-    if(objCar_9.getPosition().x < -130){
-        objCar_9.goTo(130, objCar_9.getPosition().y, objCar_9.getPosition().z)
-    }else if(objCar_9.getPosition().z >= -130){
-        objCar_9.moveX(-101, 30)
+    if(objCar_7.getPosition().x > 110){
+        objCar_7.goTo(-110, objCar_7.getPosition().y, objCar_7.getPosition().z)
+    }else if(objCar_7.getPosition().x <= 110){
+        objCar_7.moveX(221, 30)
+    }
+
+    if(objCar_8.getPosition().x < -110){
+        objCar_8.goTo(110, objCar_8.getPosition().y, objCar_8.getPosition().z)
+    }else if(objCar_8.getPosition().x >= -110){
+        objCar_8.moveX(-221, 30)
+    }
+    if(objCar_9.getPosition().x < -110){
+        objCar_9.goTo(110, objCar_9.getPosition().y, objCar_9.getPosition().z)
+    }else if(objCar_9.getPosition().x >= -110){
+        objCar_9.moveX(-221, 30)
     }
 }
 
-game_over_obj.onCollide(player, function() { // 맨 아래 바닥
-    GameOver();
+game_over_obj.onCollide(player, function() { // 플레이어가 라운드 종료 전에 떨어진 경우.
+    if(isGameOvered == false){
+        GameOver();
+    }else{
+
+    }
 })
 
 onKeyDown("KeyR", function() {
