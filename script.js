@@ -6,6 +6,11 @@ const sfxOver = getObject("sfx_over")
 sfxOver.stopAudio()
 const sfxKey = getObject("sfx_coin")
 sfxKey.stopAudio()
+const bgmWinning = getObject("BGM_Winning")
+bgmWinning.stopAudio()
+const sfxWinning = getObject("SFX_Winning")
+sfxWinning.stopAudio()
+
 
 //  변수 - 0계층
 let isPlayerTouchingFoothold = true;
@@ -40,6 +45,10 @@ const gui_nowpos_ui = getObject("GUI_NowposUI")
 const gui_replay_btn = getObject("GUI_ReplayBtn")
 gui_replay_btn.setText("")
 gui_replay_btn.hide()
+
+// Winning GUI
+const gui_winning_ui = getObject("GUI_Winning")
+gui_winning_ui.hide()
 
 // Help BG 넘기는 페이지 변수
 let nowPage = 1;
@@ -90,6 +99,7 @@ gui_play_btn.onClick(function() { // PlayBtn 클릭 시
     PlayandReplayBtnClicking();
 })
 gui_replay_btn.onClick(function() { // 다시하기 버튼 클릭 시
+    roundNum = 1;
     gui_replay_btn.setText("")
     gui_replay_btn.hide()
 
@@ -168,7 +178,9 @@ function PlayandReplayBtnClicking(){ // Play Btn과 RePlay Btn의 공통 기능
 }
 
 function countFunction() { // 타이머 시작 함수
-    ResettingData();
+    let hasMovedCloud = false;
+    let hasIncreasedRoundNum = false;
+    // ResettingData();
 
     bgmMain.playAudio()
     gui_round_ui.setText("Round : " + roundNum, true);
@@ -176,13 +188,16 @@ function countFunction() { // 타이머 시작 함수
     KeyRandomSpawning();
     
     enableKeyControl(true)
-    if(roundNum == maxRoundNum){
-        player.goTo(0, 220, 0)
-    }else{
+    if(roundNum == maxRoundNum){ // 플레이어의 roundNum이 30라운드(maxRoundNum)이 되면, 엔딩으로 이동.
+        YouWinning();
+        
+        return 0; // countFunction() 종료.
+        
+    }else if(roundNum < maxRoundNum){
         resetTimer()
         startTimer()
 
-        const startCount = setInterval(() => {
+        const startCount = setInterval(() => { // 매 초 마다 실행
             for(let k = 0; k < 7; k++){
                 // 접촉 감지 코드
                 objFoothold[k].onCollide(player, function() {
@@ -195,6 +210,7 @@ function countFunction() { // 타이머 시작 함수
             }
             
             if(floor(getTimer()) == timerCount){ // 제한 시간 20초가 끝났을 때,
+                pauseTimer()
                 clearInterval(startCount)
                 
                 gui_timer_ui.setText("Timer Over!", true)
@@ -212,33 +228,45 @@ function countFunction() { // 타이머 시작 함수
                 wait(2)
                 
                 for(let k = 0; k < 7; k++){
-                    objFoothold[k].onContact(player, function() {
+                    objFoothold[k].onContact(player, function() { //현재 플레이어가 밟고 있는 발판이 사라지지 않았을 떄
                         selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
-                        isPlayerTouchingFoothold = true;
+                        isPlayerTouchingFoothold = true; 
                     })
                 }
 
                 wait(2)
-                if(isPlayerTouchingFoothold == false){
+
+                if(isKeyHave == false){ // Key를 가지고 있지 않을 시
                     if(isGameOvered == false){
                         GameOver();
                     }else{
                 
                     }
-                    // GameOver();
-                }else if(isPlayerTouchingFoothold == true){
-                    if(isKeyHave == false){
+                }else if(isKeyHave == true){ //Key를 가지고 있을 시
+                    if(isPlayerTouchingFoothold == false){ // 발판을 밟고 있지 않을 시
                         if(isGameOvered == false){
                             GameOver();
                         }else{
                     
                         }
-                        // GameOver();
-                    }else if(isKeyHave == true){ // 다음 라운드로 진행
-                        MovingClound(); // 다음 라운드 진출 전에 구름 나타내기.
-                        wait(3)
-                        roundNum++; // 라운드 수 1 증가.
+                    }else if(isPlayerTouchingFoothold == true){ // 발판을 밟고 있을 시, 다음 라운드로 이동.
+                        if(!hasMovedCloud) { // 구름이 이동한 적이 없다면 실행
+                            hasMovedCloud = true; // 구름 이동 여부 체크
+                            MovingClound(); // 다음 라운드 진출 전에 구름 나타내기.
+                        }
+                        if(!hasIncreasedRoundNum) { // 라운드 수가 증가한 적이 없다면 실행
+                            roundNum++; // 라운드 수 1 증가.
+                            hasIncreasedRoundNum = true; // 라운드 수 증가 여부 체크
+                            gui_round_ui.setText("Round : " + roundNum, true);
+                        }
+                        clearInterval(startCount)
                         countFunction(); // 함수 재귀호출.
+
+                        // roundNum ++; // 라운드 수 1 증가.
+                        // gui_round_ui.setText("Round : " + roundNum, true);
+                        // MovingClound(); // 다음 라운드 진출 전에 구름 나타내기.
+                        // clearInterval(startCount)
+                        // countFunction(); // 함수 재귀호출.
                     }
                 }
 
@@ -252,6 +280,28 @@ function countFunction() { // 타이머 시작 함수
             }    
         }, 1000)
     }
+}
+function MovingClound(){
+    obj_cloud_bright_1.goTo(player.getPosition().x-10, player.getPosition().y+5, player.getPosition().z+4)
+    obj_cloud_bright_2.goTo(player.getPosition().x+10, player.getPosition().y+5, player.getPosition().z-4)
+    obj_cloud_bright_1.moveX(40, 4)
+    obj_cloud_bright_2.moveX(-40, 4)
+    wait(3)
+    obj_cloud_bright_1.moveX(0, 0)
+    obj_cloud_bright_2.moveX(0, 0)
+    obj_cloud_bright_1.goTo(-1000, 0, 0)
+    obj_cloud_bright_2.goTo(-1000, 0, 0)
+}
+
+function YouWinning(){
+    pauseTimer()
+    gui_winning_ui.show()
+    bgmMain.stopAudio()
+    bgmWinning.setVolume(1)
+    bgmWinning.playAudio()
+    bgmWinning.setVolume(1)
+    sfxWinning.playAudio()
+    player.goTo(0, 220, 0)
 }
 
 function AnimationGuiClickToPlayBtn(){ // Play Btn 클릭시, GUI 애니메이션 효과
@@ -275,24 +325,11 @@ function AnimationGuiClickToHelpBtn(){
 function RevivingFootHold(){ // FootHold의 Revive를 하는 함수
     for(let i = 0; i < 3; i++){ // 3번동안 Rebive를 함.
         for(let jj = 0; jj < 7; jj++){ 
-            if(aryFoothold[jj] > 7){
-                objFoothold[jj].revive()
-            }
+            objFoothold[jj].revive()
         }
     }
 }
 
-function MovingClound(){
-    obj_cloud_bright_1.goTo(player.getPosition().x-10, player.getPosition().y+5, player.getPosition().z+4)
-    obj_cloud_bright_2.goTo(player.getPosition().x+10, player.getPosition().y+5, player.getPosition().z-4)
-    obj_cloud_bright_1.moveX(40, 4)
-    obj_cloud_bright_2.moveX(-40, 4)
-    wait(3)
-    obj_cloud_bright_1.moveX(0, 0)
-    obj_cloud_bright_2.moveX(0, 0)
-    obj_cloud_bright_1.goTo(-1000, 0, 0)
-    obj_cloud_bright_2.goTo(-1000, 0, 0)
-}
 
 function ChangingFootHoldName(){ // 플레이어가 밟고 있는 발판의 값을 string형으로 바꿔주는 메서드
     if(selectHoldNum == -1){
@@ -410,7 +447,7 @@ function ResettingData(){
 function GameOver(){
     isGameOvered = true;
     game_over_spawn_obj.revive()
-    roundNum = 1;
+    // roundNum = 1;
     bgmMain.stopAudio()
     sfxOver.playAudio()
     pauseTimer()
@@ -525,7 +562,7 @@ traps_f_1.forEach((Trap_F_1) => {
 })
 traps_f_2.forEach((Trap_F_2) => {
     Trap_F_2.onCollide(player, function() {
-        player.goTo(-23.5, round(player.getPosition().y, 0)-8, 45)
+        player.goTo(-23.5, round(player.getPosition().y, 0)-5, 45)
     })
 })
 
@@ -623,4 +660,6 @@ game_over_obj.onCollide(player, function() { // 플레이어가 라운드 종료
 
 onKeyDown("KeyR", function() {
     RevivingFootHold();
+})
+onKeyDown("Slash", function() {
 })
