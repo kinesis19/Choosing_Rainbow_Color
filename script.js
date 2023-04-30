@@ -1,4 +1,4 @@
-// 2023.04.15 - v1.0.0-beta1 (최종 완성작)
+// 2023.04.15 - v1.0.1-release1 (2023.04.30)
 // BGM and SFX
 const bgmMain = getObject("MainBGM")
 bgmMain.stopAudio()
@@ -33,6 +33,7 @@ const gui_help_bg2 = getObject("GUI_HelpBG_2")
 const gui_help_bg3 = getObject("GUI_HelpBG_3")
 const gui_help_bg4 = getObject("GUI_HelpBG_4")
 const gui_help_bg5 = getObject("GUI_HelpBG_5")
+const gui_help_bg6 = getObject("GUI_HelpBG_6")
 
 GUIHelpAllHide()
 
@@ -73,13 +74,14 @@ const obj_key = getObject("Key")
 // Bgm Setting
 bgmMain.setVolume(0.3)
 
+// Testting
 
 
 // // 타이머 메서드
 
-let timerCount = 20; // 제한 시간
+let timerCount = 21; // 제한 시간
 let roundNum = 1; // 현재 라운드
-let maxRoundNum = 3; // 게임 종료 라운드
+let maxRoundNum = 30; // 게임 종료 라운드
 let isTimeOut = false; 
 let aryFoothold = [0, 0, 0, 0, 0, 0, 0]; // 7가지 발판의 랜덤값 비교용 (메인)
 
@@ -122,6 +124,8 @@ function GUIHelpAllHide(){
     gui_help_bg3.hide()
     gui_help_bg4.hide()
     gui_help_bg5.hide()
+    // gui_help_bg6.setPosition(0, 10)
+    gui_help_bg6.hide()
     gui_help_play2_btn.hide()
     gui_helpLeft_btn.hide()
 }
@@ -149,6 +153,11 @@ function ShowingHelpPage(){
         gui_help_play2_btn.hide()
     }else if(nowPage == 5){
         gui_help_bg5.show()
+        gui_helpRight_btn.show()
+        gui_helpLeft_btn.show()
+        gui_help_play2_btn.hide()
+    }else if(nowPage == 6){
+        gui_help_bg6.show()
         gui_helpRight_btn.hide()
         gui_helpLeft_btn.show()
         gui_help_play2_btn.show()
@@ -202,38 +211,54 @@ function countFunction() { // 타이머 시작 함수
                 // 접촉 감지 코드
                 objFoothold[k].onCollide(player, function() {
                     selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
+                    isPlayerTouchingFoothold = true; 
                 })
                 objFoothold[k].onCollideEnd(player, function() {
                     selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
+                    isPlayerTouchingFoothold = false;
                 })
 
             }
-            
+            if(floor(getTimer()) == 20){
+                enableKeyControl(false) // Player 움직임 금지.
+            }
             if(floor(getTimer()) == timerCount){ // 제한 시간 20초가 끝났을 때,
                 pauseTimer()
                 clearInterval(startCount)
                 
                 gui_timer_ui.setText("Timer Over!", true)
                 enableKeyControl(false) // Player 움직임 금지.
+                
 
-                for(let i = 0; i<7; i++){ // 발판에 랜덤으로 숫자 부여 => 랜덤 제거에 영향.
+                selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
+                isPlayerTouchingFoothold = false;
+
+                // selectHoldNum = -1;
+                for(let i = 0; i < 7; i++){ // 발판 랜덤으로 제거
                     aryFoothold[i] = getRandom(1, 11);
-                }
-                
-                for(let ii = 0; ii < 7; ii++){ // 발판 랜덤으로 제거
-                    if(aryFoothold[ii] > 7){
-                        objFoothold[ii].kill()
+                    if(aryFoothold[i] > 7){
+                        objFoothold[i].kill()
                     }
-                }
-                wait(2)
-                
-                for(let k = 0; k < 7; k++){
-                    objFoothold[k].onContact(player, function() { //현재 플레이어가 밟고 있는 발판이 사라지지 않았을 떄
-                        selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
+                    objFoothold[i].onContact(player, function() { //현재 플레이어가 밟고 있는 발판이 사라지지 않았을 떄
+                        selectHoldNum = i; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
+                        ChangingFootHoldName();
                         isPlayerTouchingFoothold = true; 
                     })
+                    // objFoothold[i].onCollideEnd(player, function() {
+                    //     selectHoldNum = -1; // 현재 플레이어가 색깔 발판을 밟고 있지 않은 상태면, -1 값을 줌. (= Nothing)
+                    //     isPlayerTouchingFoothold = false;
+                    // })
                 }
+                wait(4)
+                
+                // for(let k = 0; k < 7; k++){
+                //     objFoothold[k].onContact(player, function() { //현재 플레이어가 밟고 있는 발판이 사라지지 않았을 떄
+                //         selectHoldNum = k; // 현재 플레이어가 밟고 있는 발판의 값을 넣음(0은 빨강 ~~ 6은 보라색)
+                //         isPlayerTouchingFoothold = true; 
+                //     })
+                // }
 
+                // ChangingFootHoldName();
                 wait(2)
 
                 if(isKeyHave == false){ // Key를 가지고 있지 않을 시
@@ -272,7 +297,7 @@ function countFunction() { // 타이머 시작 함수
 
                 
             }else if(floor(getTimer()) != timerCount){
-                isPlayerTouchingFoothold = false; // 플레이어가 FootHold와 닿아 있지 않을 때, false 값으로 지정함.
+                // isPlayerTouchingFoothold = false; // 플레이어가 FootHold와 닿아 있지 않을 때, false 값으로 지정함.
                 gui_timer_ui.setText(floor(getTimer())+"Sec", true)  
                 ChangingFootHoldName();
                 gui_keyhave_ui.setText("Key Value : " + isKeyHave)
@@ -473,7 +498,6 @@ function GameOver(){
 
 // 오브젝트 (장애물) 선언
 const trapsA_1 = getObjectsByName("TrapA_1")
-const traps_b_1 = getObjectsByName("Trap_B_1")
 const traps_c_1 = getObjectsByName("Trap_C_1")
 const traps_e_1 = getObjectsByName("Trap_E_1")
 const traps_f_1 = getObjectsByName("Trap_F_1")
@@ -514,16 +538,6 @@ trapsA_1.forEach((TrapA_1) => {
     })
 })
 
-traps_b_1.forEach((Trap_B_1) => {
-    setInterval(() => {
-        Trap_B_1.rotateY(-1)
-    })
-    Trap_B_1.onCollide(player, function() {
-        player.changeAxisSpeed(5, 0, 0)
-        wait(1)
-        player.changeAxisSpeed(0, 0, 0)
-    })
-})
 
 traps_c_1.forEach((Trap_C_1) => {
     setInterval(() => {
@@ -598,6 +612,7 @@ onSecond(1, function() {
     MovingCars();
     obj_key.rotateY(90) // 동전 애니메이션
 })
+
 
 function MovingCars(){
     if(objCar_1.getPosition().x > 110){
